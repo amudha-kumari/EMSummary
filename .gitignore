@@ -1,0 +1,14 @@
+#ignore datasets
+data/
+
+#ignore models
+models/
+
+# Ignore other unnecessary files
+*.log
+*.tmp
+*.DS_Store
+*.egg-info/
+
+__pycache__/
+*.pyc
