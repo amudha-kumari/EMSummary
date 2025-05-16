@@ -68,7 +68,10 @@ def generate_summary(text, tokenizer, model, device="cpu"):
             min_length=40,
             num_beams=4,
             length_penalty=2.0,
-            early_stopping=True,
+            no_repeat_ngram_size=2,
+            temperature=0.7,
+            top_k=50,
+            early_stopping=True
         )
 
     return tokenizer.decode(summary_ids[0], skip_special_tokens=True)

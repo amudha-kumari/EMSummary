@@ -78,7 +78,7 @@ def bert_summary(text):
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
     # Perform summarization
-    summary = summarizer(cleaned_text, max_length=150, min_length=50, do_sample=False)
+    summary = summarizer(cleaned_text, max_length=150, min_length=50, do_sample=False, no_repeat_ngram_size=2, temperature=0.7, top_k=50)
 
     # Get the first summary result (as it's a list of dictionaries)
     return summary[0]['summary_text']
