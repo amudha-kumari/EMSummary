@@ -10,6 +10,7 @@ summaries. The results are saved in an output TSV file containing the EMDB ID, m
 Typical usage example:
     python generate_finetuned_summaries.py \
         --model_dir ../data/models/bart_emdb_finetuned_train/ \
+        --model BART \
         --input_tsv ../data/metadata_emsummary_train.tsv \
         --output_tsv ../data/summaries_finetuned_bart_train.tsv \
         --num_entries 20
@@ -38,12 +39,19 @@ email:
 
 import pandas as pd
 from transformers import BartForConditionalGeneration, BartTokenizer
+from transformers import T5Tokenizer, T5ForConditionalGeneration
 import argparse
 import torch
 
-def load_model(model_dir):
+def load_model_BART(model_dir):
     tokenizer = BartTokenizer.from_pretrained(model_dir)
     model = BartForConditionalGeneration.from_pretrained(model_dir)
+    model.eval()
+    return tokenizer, model
+
+def load_model_T5(model_dir):
+    tokenizer = T5Tokenizer.from_pretrained(model_dir)
+    model = T5ForConditionalGeneration.from_pretrained(model_dir)
     model.eval()
     return tokenizer, model
 
@@ -77,8 +85,9 @@ def generate_summary(text, tokenizer, model, device="cpu"):
     return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate summaries using a fine-tuned BART model.")
+    parser = argparse.ArgumentParser(description="Generate summaries using a fine-tuned BART or faln-T5 models.")
     parser.add_argument("--model_dir", required=True, help="Path to fine-tuned model directory")
+    parser.add_argument("--model", required=True, help="Model type (BART or T5)")
     parser.add_argument("--input_tsv", required=True, help="TSV file containing EMDB metadata")
     parser.add_argument("--output_tsv", required=True, help="Output TSV file to store generated summaries")
     parser.add_argument("--num_entries", type=int, default=5, help="Number of entries to process (default: 5)")
@@ -89,9 +98,30 @@ def main():
     df = df.head(args.num_entries)
 
     # Load model and tokenizer
-    tokenizer, model = load_model(args.model_dir)
+    if args.model == "BART":
+        tokenizer, model = load_model_BART(args.model_dir)
+    elif args.model == "T5":
+        tokenizer, model = load_model_T5(args.model_dir)
 
-    # Prepare text using all relevant columns
+    # # Prepare text using all relevant columns
+    # def build_text(row):
+    #     text_parts = [row["Title"]]
+    #     if row["Publication_Title"].strip().lower() != "unknown":
+    #         text_parts.append(row["Publication_Title"])
+    #     if row["Abstract"].strip().lower() != "unknown":
+    #         text_parts.append(row["Abstract"])
+    #     if row["Keywords"].strip().lower() != "unknown":
+    #         text_parts.append(row["Keywords"])
+    #     if row["PDB_ID"].strip().lower() != "unknown":
+    #         text_parts.append(row["PDB_ID"])
+    #     text_parts.extend([
+    #         row["Sample_Names"],
+    #         row["Organisms"],
+    #         row["EM_Method"],
+    #         str(row["Resolution"])
+    #     ])
+    #     return ". ".join([part for part in text_parts if part and part.strip()])
+
     def build_text(row):
         text_parts = [row["Title"]]
         if row["Publication_Title"].strip().lower() != "unknown":
@@ -100,14 +130,7 @@ def main():
             text_parts.append(row["Abstract"])
         if row["Keywords"].strip().lower() != "unknown":
             text_parts.append(row["Keywords"])
-        if row["PDB_ID"].strip().lower() != "unknown":
-            text_parts.append(row["PDB_ID"])
-        text_parts.extend([
-            row["Sample_Names"],
-            row["Organisms"],
-            row["EM_Method"],
-            str(row["Resolution"])
-        ])
+
         return ". ".join([part for part in text_parts if part and part.strip()])
 
     df["text"] = df.apply(build_text, axis=1)
