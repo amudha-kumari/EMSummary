@@ -37,12 +37,6 @@ def initialize_document_store(retriever_type):
 def populate_documents(document_store):
     """Populate the document store with example documents. Replace with your real content."""
     sample_docs = [
-        {"content": "EMD-60072 is a cryo-EM structure of a human protein complex resolved at 3.2 Å.",
-         "meta": {"emd_id": "60072", "title": "Cryo-EM structure of protein complex"}},
-        {"content": "The structure was determined using a Titan Krios microscope at pH 7.4.",
-         "meta": {"technique": "cryo-EM", "resolution": "3.2 Å"}},
-        {"content": "This complex is involved in transcription regulation and was visualised using cryo-ET.",
-         "meta": {"function": "transcription regulation"}}
     ]
     documents = [Document(content=doc["content"], meta=doc["meta"]) for doc in sample_docs]
     document_store.write_documents(documents)

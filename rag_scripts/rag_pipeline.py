@@ -7,7 +7,7 @@ using a retriever and a summarizer (generator). You provide a query and
 optional metadata (e.g. title/abstract) to improve grounding.
 
 Example usage:
-    python rag_pipeline.py --query "Generate a 150-word summary for EMD-60072" --model facebook/bart-large-cnn
+    python rag_pipeline.py --query "Generate a 150-word summary for EMD-60072" --model facebook/bart-large-cnn --retriever_type bm25 --metadata_file meta.txt
 """
 
 import argparse
@@ -42,7 +42,7 @@ def run_rag_pipeline(retriever, summarizer, query: str, metadata: str = None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a simple RAG-style pipeline using Haystack.")
-    parser.add_argument("--query", type=str, required=True, help="Query to generate an answer for.")
+    parser.add_argument("--query", type=str, required=True, help="Query to generate summary for.")
     parser.add_argument("--metadata_file", type=str, help="Optional metadata file (e.g. title + abstract).")
     parser.add_argument("--retriever_type", type=str, default="bm25", choices=["bm25", "dense"],
                         help="Retriever type to use.")

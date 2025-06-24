@@ -72,8 +72,8 @@ def generate_summary(text, tokenizer, model, device="cpu"):
         summary_ids = model.generate(
             input_ids=inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
-            max_length=256,
-            min_length=40,
+            max_length=200,  # Increase max tokens for longer summary
+            min_length=100,  # Increase min tokens to encourage longer summaries
             num_beams=4,
             length_penalty=2.0,
             no_repeat_ngram_size=2,
@@ -103,24 +103,6 @@ def main():
     elif args.model == "T5":
         tokenizer, model = load_model_T5(args.model_dir)
 
-    # # Prepare text using all relevant columns
-    # def build_text(row):
-    #     text_parts = [row["Title"]]
-    #     if row["Publication_Title"].strip().lower() != "unknown":
-    #         text_parts.append(row["Publication_Title"])
-    #     if row["Abstract"].strip().lower() != "unknown":
-    #         text_parts.append(row["Abstract"])
-    #     if row["Keywords"].strip().lower() != "unknown":
-    #         text_parts.append(row["Keywords"])
-    #     if row["PDB_ID"].strip().lower() != "unknown":
-    #         text_parts.append(row["PDB_ID"])
-    #     text_parts.extend([
-    #         row["Sample_Names"],
-    #         row["Organisms"],
-    #         row["EM_Method"],
-    #         str(row["Resolution"])
-    #     ])
-    #     return ". ".join([part for part in text_parts if part and part.strip()])
 
     def build_text(row):
         text_parts = [row["Title"]]

@@ -1,19 +1,28 @@
 # Core libraries
-transformers==4.51.3
-datasets>=2.0.0
-torch>=2.1.0
-tokenizers>=0.14.0
-scikit-learn>=1.3.0
-numpy>=1.24.0
-pandas>=1.5.0
+transformers==4.51.3        # For using BART, FLAN-T5
+datasets>=2.0.0             # For loading benchmark datasets
+torch>=2.1.0                # Deep learning backend
+tokenizers>=0.14.0          # Efficient tokenization
+scikit-learn>=1.3.0         # Evaluation utilities
+numpy>=1.24.0               # Numerical computations
+pandas>=1.5.0               # Tabular data processing
 
-# Optional: for training summaries
-evaluate>=0.4.0  # For metrics like ROUGE
-rouge-score>=0.1.2
+# Optional: For evaluation
+evaluate>=0.4.0             # HuggingFace's unified evaluation interface
+rouge-score>=0.1.2          # For summarization metrics (ROUGE)
 
-# Optional: tqdm progress bars
+# Optional: for progress bar
 tqdm>=4.66.0
 
-# Optional: for loading/saving JSON/XML
-lxml
+# Optional: XML/JSON parsing
+lxml                        # For parsing XML metadata (EMDB)
 
+pydantic<2.0.0              # For type checking
+
+Haystack>=2.0.0
+
+Bio >=1.8.0                # For parsing biological data formats (e.g., FASTA, GenBank)
+
+gradio>=3.4.0          # For building interactive demos
+
+streamlit>=1.25.0

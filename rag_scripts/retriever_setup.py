@@ -30,6 +30,7 @@ def setup_retriever(retriever_type: str, model_name: str = None):
     doc_store = InMemoryDocumentStore()
 
     if retriever_type == "bm25":
+        doc_store = InMemoryDocumentStore(use_bm25=True)
         retriever = BM25Retriever(document_store=doc_store)
         print("BM25 Retriever initialized.")
     elif retriever_type == "dense":

@@ -6,13 +6,13 @@ A self-contained script that builds and runs a simple Retrieval-Augmented Genera
 using Haystack v1.x. It supports BM25 and dense retrievers, and a Transformers-based summarizer.
 
 Usage:
-    python rag_pipeline.py --query "Generate a 150-word summary for EMD-60072"72 --model facebook/bart-large-cnn
-    python rag_pipeline.py --query "Summarize EMD-60072" --metadata_file meta.txt --retriever_type dense
+    python rag_pipeline_with_initiaization.py  --model facebook/bart-large-cnn
+    python rag_pipeline_with_initiaization.py  --metadata_file meta.txt --retriever_type bm25 --model google/flan-t5-base
 """
 
 import argparse
 from haystack.document_stores import InMemoryDocumentStore
-from haystack.nodes import BM25Retriever, EmbeddingRetriever, TransformersSummarizer
+from haystack.nodes import BM25Retriever, EmbeddingRetriever
 from haystack.schema import Document
 from transformers import pipeline
 
@@ -20,6 +20,7 @@ from transformers import pipeline
 def load_metadata(file_path):
     """Load metadata text from file."""
     with open(file_path, 'r', encoding='utf-8') as f:
+        next(f) #skip first line (header)
         return f.read().strip()
 
 
@@ -31,18 +32,11 @@ def initialize_document_store(retriever_type):
         return InMemoryDocumentStore()
 
 
-def populate_documents(document_store):
-    """Populate the document store with example documents. Replace with your real content."""
-    sample_docs = [
-        {"content": "EMD-60072 is a cryo-EM structure of a human protein complex resolved at 3.2 Å.",
-         "meta": {"emd_id": "60072", "title": "Cryo-EM structure of protein complex"}},
-        {"content": "The structure was determined using a Titan Krios microscope at pH 7.4.",
-         "meta": {"technique": "cryo-EM", "resolution": "3.2 Å"}},
-        {"content": "This complex is involved in transcription regulation and was visualised using cryo-ET.",
-         "meta": {"function": "transcription regulation"}}
-    ]
-    documents = [Document(content=doc["content"], meta=doc["meta"]) for doc in sample_docs]
+def populate_documents(document_store, metadata_text: str = None):
+    """Populate the document store with metadata."""
+    documents = [Document(content=metadata_text, meta={"source": "metadata_file"})]
     document_store.write_documents(documents)
+
 
 
 def setup_retriever(document_store, retriever_type, use_gpu=False):
@@ -65,33 +59,36 @@ def setup_summarizer(model_name: str, use_gpu: bool):
     device = 0 if use_gpu else -1
     return pipeline("summarization", model=model_name, device=device)
 
-def run_rag_pipeline(retriever, summarizer, query: str, metadata: str = None):
-    """Run retrieval + summarization using Hugging Face directly."""
-    full_query = f"{metadata}\n\n{query}" if metadata else query
-    docs = retriever.retrieve(query=full_query, top_k=5)
+
+def run_rag_pipeline(retriever, summarizer, metadata: str):
+    """Run retrieval + summarization using only metadata as input."""
+    if not metadata:
+        raise ValueError("Metadata is required when no query is provided.")
+
+    docs = retriever.retrieve(query=metadata, top_k=5)
     full_text = " ".join([doc.content for doc in docs])
     result = summarizer(full_text, max_length=150, min_length=30, do_sample=False)
     return result[0]['summary_text']
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a RAG-style Haystack pipeline.")
-    parser.add_argument("--query", type=str, required=True, help="Query for the generator.")
     parser.add_argument("--model", type=str, required=True, help="Summarizer model name or path.")
     parser.add_argument("--metadata_file", type=str, help="Optional metadata (e.g. title, abstract).")
     parser.add_argument("--retriever_type", type=str, default="bm25", choices=["bm25", "dense"],
                         help="Choose BM25 or dense retriever.")
     parser.add_argument("--gpu", action="store_true", help="Use GPU for dense retriever and summarizer.")
-    parser.add_argument("--out_file", action="path/to/output/file", help="write output to file")
+    parser.add_argument("--out_file", type=str, help="write output to file")
 
     args = parser.parse_args()
 
     metadata_text = load_metadata(args.metadata_file) if args.metadata_file else None
     document_store = initialize_document_store(args.retriever_type)
-    populate_documents(document_store)
+    populate_documents(document_store, metadata_text=metadata_text)
     retriever = setup_retriever(document_store, args.retriever_type, use_gpu=args.gpu)
     summarizer = setup_summarizer(args.model, use_gpu=args.gpu)
 
-    result = run_rag_pipeline(retriever, summarizer, args.query, metadata_text)
+    result = run_rag_pipeline(retriever, summarizer, metadata_text)
     print("\n📢 Output:\n" + result)
 
     if args.out_file:

@@ -1,5 +1,4 @@
 import requests
-import json
 import csv
 import argparse
 import os
@@ -59,55 +58,6 @@ def get_emdb_metadata(emdb_id):
     except Exception as e:
         print(f"Error parsing entry {entry.get('emdb_id', 'unknown')}: {e}")
         return None
-
-    #     em_method = data.get("map", {}).get("method", "")
-    #     resolution = data.get("map", {}).get("resolution", {}).get("value", "")
-    #     pdb_ids = ";".join(data.get("cross_references", {}).get("pdb_list", []))
-    #
-    #     # Organisms from sample -> sample_components -> source -> organism_scientific_name
-    #     sample_components = data.get("sample", {}).get("sample_components", [])
-    #     organisms = set()
-    #     sample_names = []
-    #     for s in sample_components:
-    #         source = s.get("source", {})
-    #         org = source.get("organism_scientific_name")
-    #         if org:
-    #             organisms.add(org)
-    #         name = s.get("name")
-    #         if name:
-    #             sample_names.append(name)
-    #
-    #     title = data.get("title", "")
-    #     keywords = ";".join(data.get("keywords", []))
-    #
-    #     publications = data.get("publications", [])
-    #     if publications:
-    #         pub = publications[0]
-    #         pub_title = pub.get("title", "")
-    #         doi = pub.get("doi", "")
-    #         pubmed_id = pub.get("pubmed_id", "")
-    #         abstract = pub.get("abstract", "")
-    #     else:
-    #         pub_title = doi = pubmed_id = abstract = ""
-    #
-    #     return {
-    #         "EMDB_ID": emdb_id,
-    #         "EM_Method": em_method or "",
-    #         "Resolution": resolution or "",
-    #         "PDB_ID": pdb_ids or "",
-    #         "Organisms": ";".join(organisms),
-    #         "Title": title or "",
-    #         "Keywords": keywords or "",
-    #         "Publication_Title": pub_title or "",
-    #         "Sample_Names": ";".join(sample_names),
-    #         "DOI": doi or "",
-    #         "Pubmed": pubmed_id or "",
-    #         "Abstract": abstract or ""
-    #     }
-    #
-    # except requests.RequestException as e:
-    #     print(f"[ERROR] Failed to retrieve {emdb_id}: {e}")
-    #     return None
 
 
 def write_metadata_to_tsv(metadata_list, output_file):
