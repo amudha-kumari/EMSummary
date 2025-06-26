@@ -23,6 +23,9 @@ from transformers import (
     DataCollatorForSeq2Seq
 )
 from datasets import Dataset
+import mlflow
+import mlflow.pytorch
+
 
 
 def prepare_dataset(metadata_path: str, summaries_path: str) -> Dataset:
@@ -135,14 +138,28 @@ def main():
         tokenizer=tokenizer,
         data_collator=data_collator
     )
+    # Start MLflow logging
+    with mlflow.start_run():
+        mlflow.log_param("model_name", args.model_name)
+        mlflow.log_param("epochs", args.epochs)
+        mlflow.log_param("train_batch_size", args.batch_size)
+        mlflow.log_param("eval_batch_size", args.eval_batch_size)
 
-    # Start training
-    trainer.train()
+        # Train model
+        trainer.train()
 
-    # Save final model and tokenizer
-    model.save_pretrained(args.out_dir)
-    tokenizer.save_pretrained(args.out_dir)
-    print(f"Model and tokenizer saved to {args.out_dir}")
+        # Evaluate and log metrics
+        metrics = trainer.evaluate()
+        for key, value in metrics.items():
+            mlflow.log_metric(key, value)
+
+        # Log model and artifacts
+        model.save_pretrained(args.out_dir)
+        tokenizer.save_pretrained(args.out_dir)
+        mlflow.pytorch.log_model(model, "model")
+        mlflow.log_artifacts(args.out_dir, artifact_path="model_artifacts")
+
+        print(f"Model and tokenizer saved to {args.out_dir}")
 
 
 if __name__ == "__main__":

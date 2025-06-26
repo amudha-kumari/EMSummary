@@ -6,7 +6,7 @@
 
 - Extracts and processes key metadata fields from EMDB XML files (e.g., method, resolution, sample, title, abstract, keywords).
 - Generates summaries using:
-  - Extractive summarization with `facebook/bart-large-cnn`
+  - Extractive summarization with `andkelly21/t5-small-finetuned-pubmed`
 - Evaluates generated summaries using:
   - ROUGE (ROUGE-1, ROUGE-2, ROUGE-L)
   - BERTScore (precision, recall, F1)
@@ -38,11 +38,11 @@ python scripts/extract_emdb_metadata.py --xml_dir /path/to/xml_files --out_file 
 
 2. Generate Summaries using Huggigface BART
 
-python scripts/generate_summaries_with_BART.py --in_file /path/to/metadata_file --out_file out_file.tsv
+python scripts/generate_summaries_with_T5_pubmed.py --in_file /path/to/metadata_file --out_file out_file.tsv
 
 3.Generate fine-tuned models for EMDB-specific metadata
 
-python scripts/create_finetuned_models.py --metadata path/to/metadata.tsv --summaries path/to/summaries.tsv --out_dir path/to/save_model
+python scripts/finetune_t5_emdb.py --metadata path/to/metadata.tsv --summaries path/to/summaries.tsv --out_dir path/to/save_model
 
 
 4. Generate Summaries with fine-tuned models

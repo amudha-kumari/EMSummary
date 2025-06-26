@@ -93,7 +93,7 @@ st.markdown("Enter an EMDB ID and summarizer model. Metadata will be fetched aut
 
 with st.form("summarization_form"):
     emdb_id = st.text_input("EMDB ID", value="EMD-12345")
-    model_path = st.text_input("Model Path or Hugging Face Model Name", value="facebook/bart-large-cnn")
+    model_path = st.text_input("Model Path or Hugging Face Model Name", value="amudhakumari/emdb-summary-generator")
     retriever_type = st.radio("Retriever Type", options=["bm25", "dense"], index=0)
     use_gpu = st.checkbox("Use GPU", value=False)
 
